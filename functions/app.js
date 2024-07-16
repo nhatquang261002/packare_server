@@ -43,9 +43,6 @@ app.use((err, req, res, next) => {
 
 app.use(cors());
 
-// Proxy requests to the backend server
-app.use('/api', createProxyMiddleware({ target: 'http://192.168.138.133:8080', changeOrigin: true }));
-
 // Start the HTTP server
 const server = http.createServer(app);
 server.listen(port, () => {
@@ -55,7 +52,7 @@ server.listen(port, () => {
 OrderScheduler.startOrderCancellationScheduler();
 
 // Create a WebSocket server instance
-const wss = new WebSocket.Server({ port: 8443 });
+const wss = new WebSocket.Server({ server, path: '/ws' });
 
 // Log to confirm WebSocket server initialization
 wss.on('listening', () => {
