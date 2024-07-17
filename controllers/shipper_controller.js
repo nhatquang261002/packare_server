@@ -144,6 +144,7 @@ const recommendOrderForShipper = async (req, res) => {
                         ]
                     ]
                 };
+                console.lo(boundingBox);
 
                 // Find Nearby Orders using Expanded Bounding Box with status "verified"
                 const nearbyOrders = await Order.find({
