@@ -167,6 +167,8 @@ const recommendOrderForShipper = async (req, res) => {
                         }
                     ]
                 });
+                console.log('near');
+                console.log(nearbyOrders);
                 
                 const shipperRouteDistance = currentRoute.distance;
 
