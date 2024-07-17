@@ -30,13 +30,13 @@ router.post('/create-order', authenticateToken, createOrder);
 router.post('/:id/feedback', authenticateToken, orderFeedback);
 
 // Accept Order
-router.put('/:id/accept', authenticateToken, checkRole(['admin', 'shipper']), acceptOrder);
+router.put('/:id/accept',  checkRole(['admin', 'shipper']), acceptOrder);
 
 // Decline verify Order from Staff
-router.put('/:id/decline', authenticateToken, checkRole(['admin', 'staff']), declineOrder);
+router.put('/:id/decline',  checkRole(['admin', 'staff']), declineOrder);
 
 // Verify the Order from staff
-router.put('/:id/verify', authenticateToken, checkRole(['admin', 'staff']), verifyOrder);
+router.put('/:id/verify',  checkRole(['admin', 'staff']), verifyOrder);
 
 // Cancel Order
 router.put('/:id/cancel', authenticateToken, cancelOrder);
