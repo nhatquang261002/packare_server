@@ -215,7 +215,8 @@ const recommendOrderForShipper = async (req, res) => {
                             order.order_geometry = geometry || null;
                         }
 
-
+                        console.log(order.order_id);
+                        console.log(distance);
 
                         // Calculate total combined distance, min is 0
                         const totalCombinedDistance = Math.max(0.0, (distance - shipperRouteDistance) / 1000);

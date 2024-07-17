@@ -48,7 +48,7 @@ router.put('/:id/confirm-pickup', authenticateToken, checkRole(['admin', 'shippe
 router.put('/:id/confirm-delivered', authenticateToken, checkRole(['admin', 'shipper']), confirmDelivered);
 
 // Confirm complete Order from shipper
-router.put('/:id/complete', authenticateToken, checkRole(['admin', 'shipper']), completeOrder);
+router.put('/:id/complete', authenticateToken, completeOrder);
 
 // Get the Orders History from User
 router.get('/history', authenticateToken, viewOrderHistory);
