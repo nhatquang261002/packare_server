@@ -57,7 +57,7 @@ const createOrder = async (req, res) => {
 
         const order_id = await generateOrderID();
 
-
+        const shipping_price = sender_paid - sender_paid * order_percent_fee;
         // Create new order
         const order = new Order({
             order_id: order_id,
@@ -66,7 +66,7 @@ const createOrder = async (req, res) => {
             receiver_name,
             receiver_phone,
             sender_paid: sender_paid,
-            shipping_price: sender_paid - sender_paid * order_percent_fee,
+            shipping_price: shipping_price,
             send_address,
             send_coordinates,
             delivery_address,
