@@ -35,7 +35,7 @@ const createOrder = async (req, res) => {
 
 
         // Check if sender has enough balance
-        const senderAccount = await Account.findOne({ account_id: order.sender_id });
+        const senderAccount = await Account.findOne({ account_id: sender_id });
 
         // If sender account not found, return error
         if (!senderAccount) {
@@ -43,7 +43,7 @@ const createOrder = async (req, res) => {
         }   
 
         // If sender balance is less than sender_paid, return error
-        if (senderAccount.wallet.balance < order.sender_paid) {
+        if (senderAccount.wallet.balance < sender_paid) {
             return res.status(400).json({ message: 'Insufficient balance in sender wallet' });
         }
 
