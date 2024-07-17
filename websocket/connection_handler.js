@@ -85,7 +85,7 @@ function handleConnection(ws, req) {
                         // Send shipper location updates
                         sendShipperLocation(data.orderId, data.shipperId, data.latitude, data.longitude);
                         break;
-                    case 'cancel-shipper-location-sharing':
+                    case 'cancel-location-sharing':
                         cancelShipperLocationSharing(ws, data);
                         break;
                     case 'pong':
