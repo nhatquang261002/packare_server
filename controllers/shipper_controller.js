@@ -115,6 +115,8 @@ const recommendOrderForShipper = async (req, res) => {
                 continue; // Skip if route direction is unknown
             }
 
+            console.log(directionsToCheck);
+
             for (const { origin, destination } of directionsToCheck) {
                 let routeOrigin = {
                     lat: origin.coordinates[1],
