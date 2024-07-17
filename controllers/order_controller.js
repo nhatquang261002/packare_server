@@ -13,7 +13,6 @@ const createOrder = async (req, res) => {
             shipper_id,
             receiver_name,
             receiver_phone,
-            shipping_price,
             sender_paid,
             send_address,
             send_coordinates,
