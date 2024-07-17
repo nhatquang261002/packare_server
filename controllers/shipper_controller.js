@@ -107,15 +107,15 @@ const recommendOrderForShipper = async (req, res) => {
                 destination = currentRoute.start_coordinates;
                 directionsToCheck.push({ origin, destination });
             } else if (currentRoute.route_direction === 'two_way') {
-                origin = currentRoute.start_coordinates;
-                destination = currentRoute.end_coordinates;
-                directionsToCheck.push({ origin, destination });
-                directionsToCheck.push({ origin: destination, destination: origin });
+                directionsToCheck.push(
+                    { origin: currentRoute.start_coordinates, destination: currentRoute.end_coordinates },
+                    { origin: currentRoute.end_coordinates, destination: currentRoute.start_coordinates }
+                );
             } else {
                 continue; // Skip if route direction is unknown
             }
 
-            console.log(directionsToCheck);
+            
 
             for (const { origin, destination } of directionsToCheck) {
                 let routeOrigin = {
@@ -129,22 +129,29 @@ const recommendOrderForShipper = async (req, res) => {
                 };
 
                 // Calculate buffer for bounding box based on max_distance_allowance (assuming max_distance_allowance is in kilometers)
-                const buffer = max_distance_allowance * 2 / 111.12; // Approximate value for converting km to degrees
+                // Convert max distance allowance from km to degrees for both latitude and longitude
+                const bufferLat = max_distance_allowance * 2.5 / 111.12; // Latitude buffer in degrees
+                const bufferLng = (max_distance_allowance * 2.5) / (111.12 * Math.cos(Math.min(routeOrigin.lat, routeDestination.lat) * (Math.PI / 180))); // Longitude buffer adjusted for latitude
 
-                // Create Expanded Bounding Box
+                // Determine the bounding box extents
+                const minLat = Math.min(routeOrigin.lat, routeDestination.lat) - bufferLat;
+                const maxLat = Math.max(routeOrigin.lat, routeDestination.lat) + bufferLat;
+                const minLng = Math.min(routeOrigin.lng, routeDestination.lng) - bufferLng;
+                const maxLng = Math.max(routeOrigin.lng, routeDestination.lng) + bufferLng;
+
+                // Create the bounding box polygon
                 const boundingBox = {
                     type: 'Polygon',
                     coordinates: [
                         [
-                            [routeOrigin.lng - buffer, routeOrigin.lat + buffer], // northwest
-                            [routeDestination.lng + buffer, routeOrigin.lat + buffer], // northeast
-                            [routeDestination.lng + buffer, routeDestination.lat - buffer], // southeast
-                            [routeOrigin.lng - buffer, routeDestination.lat - buffer], // southwest
-                            [routeOrigin.lng - buffer, routeOrigin.lat + buffer] // northwest (closing the loop)
+                            [minLng, maxLat], // Northwest
+                            [maxLng, maxLat], // Northeast
+                            [maxLng, minLat], // Southeast
+                            [minLng, minLat], // Southwest
+                            [minLng, maxLat]  // Northwest (closing the loop)
                         ]
                     ]
                 };
-                console.log(boundingBox);
 
                 // Find Nearby Orders using Expanded Bounding Box with status "verified"
                 const nearbyOrders = await Order.find({
@@ -168,12 +175,12 @@ const recommendOrderForShipper = async (req, res) => {
                         }
                     ]
                 });
-                console.log('near');
-                console.log(nearbyOrders);
+
                 
                 const shipperRouteDistance = currentRoute.distance;
 
                 for (const order of nearbyOrders) {
+     
                     if(recommendedOrders.length >= recommend_order_limit) {
                         break;
                     }
@@ -189,8 +196,9 @@ const recommendOrderForShipper = async (req, res) => {
 
                     // Check if order already exists in recommendedOrders
                     const existingOrderIndex = recommendedOrders.findIndex(item => item.order.order_id === order.order_id);
-
+            
                     try {
+
                         // Get order's route distance from Goong API
                         const { distance, geometry } = await getDirections(routeOrigin, routeDestination, orderCoordinates);
 
@@ -206,6 +214,8 @@ const recommendOrderForShipper = async (req, res) => {
                         if (!order.order_geometry) {
                             order.order_geometry = geometry || null;
                         }
+
+
 
                         // Calculate total combined distance, min is 0
                         const totalCombinedDistance = Math.max(0.0, (distance - shipperRouteDistance) / 1000);

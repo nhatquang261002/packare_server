@@ -30,7 +30,7 @@ router.post('/create-order', authenticateToken, createOrder);
 router.post('/:id/feedback', authenticateToken, orderFeedback);
 
 // Accept Order
-router.put('/:id/accept',  checkRole(['admin', 'shipper']), acceptOrder);
+router.put('/:id/accept',  authenticateToken, checkRole(['admin', 'shipper']), acceptOrder);
 
 // Decline verify Order from Staff
 router.put('/:id/decline',   declineOrder);

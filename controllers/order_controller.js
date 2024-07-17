@@ -172,6 +172,7 @@ const acceptOrder = async (req, res) => {
             return res.status(400).json({ message: 'Order might be accepted by another shipper' });
         }
 
+        console.log('here');
         // Update the order status and other details
         order.status = 'shipper_accepted';
         order.shipper_id = shipperId;
