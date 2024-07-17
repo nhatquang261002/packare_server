@@ -55,7 +55,7 @@ server.listen(port, () => {
 OrderScheduler.startOrderCancellationScheduler();
 
 // Create a WebSocket server instance
-const wss = new WebSocket.Server({ port: 8443 });
+const wss = new WebSocket.Server({ server, path: '/ws' });
 
 // Log to confirm WebSocket server initialization
 wss.on('listening', () => {

@@ -14,6 +14,7 @@ const createOrder = async (req, res) => {
             receiver_name,
             receiver_phone,
             shipping_price,
+            sender_paid,
             send_address,
             send_coordinates,
             delivery_address,
@@ -28,7 +29,7 @@ const createOrder = async (req, res) => {
 
 
         // Verify required fields
-        if (!sender_id || !receiver_name || !receiver_phone || !shipping_price || !send_address || !send_coordinates || !delivery_address || !delivery_coordinates || !preferred_pickup_start_time || !preferred_pickup_end_time || !preferred_delivery_start_time || !preferred_delivery_end_time || !order_lasting_time || !packages ) {
+        if (!sender_id || !receiver_name || !receiver_phone || !sender_paid || !send_address || !send_coordinates || !delivery_address || !delivery_coordinates || !preferred_pickup_start_time || !preferred_pickup_end_time || !preferred_delivery_start_time || !preferred_delivery_end_time || !order_lasting_time || !packages ) {
             return res.status(400).json({ message: 'Missing required fields or packages' });
         }
 
