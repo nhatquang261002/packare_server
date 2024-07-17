@@ -431,6 +431,7 @@ const completeOrder = async (req, res) => {
         const shipperAccount = await Account.findOne({ account_id: order.shipper_id });
         if (shipperAccount) {
             shipperAccount.shipper.shipped_orders.push(orderId);
+            shipperAccount.shipper.current_orders.pop(orderId);
             const totalCost = order.shipping_price + order.packages.reduce((total, pkg) => total + pkg.package_price, 0);
             shipperAccount.wallet.balance += totalCost;
             await shipperAccount.save();

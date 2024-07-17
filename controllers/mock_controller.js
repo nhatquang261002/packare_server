@@ -93,7 +93,7 @@ const generateMockOrders = async (req, res) => {
                 receiver_phone: receiverPhone,
                 send_address: sendAddress,
                 delivery_address: deliveryAddress,
-                status: 'waiting',
+                status: 'verified',
                 create_time: faker.date.past(),
                 order_lasting_time: faker.date.future(),
                 shipper_route_id: null,
@@ -109,12 +109,8 @@ const generateMockOrders = async (req, res) => {
                 preferred_delivery_start_time: faker.date.future(),
                 preferred_delivery_end_time: faker.date.future(),
                 status_change_time: faker.date.recent(),
-                feedback: {
-                    rating: 5,
-                    comment: '',
-                    create_time: faker.date.past()
-                }
             });
+            console.log(order);
             const savedOrder = await order.save();
             orders.push(savedOrder);
         }
