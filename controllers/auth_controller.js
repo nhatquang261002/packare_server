@@ -3,10 +3,9 @@ const Account = require('../models/account_model');
 const { hashPassword } = require('../utils/hash');
 const { generateToken } = require('../utils/jwt');
 const { generateAccountID } = require('../utils/generate_id');
-const jwt = require('jsonwebtoken');
-const config = require('../secret_config');
 
-// Controller function for user login with username and password
+
+// Controller function for user login
 const login = async (req, res) => {
     const { username, password } = req.body;
 
@@ -29,6 +28,7 @@ const login = async (req, res) => {
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
+
 
 // Controller function for user login with an existing token (cached login)
 const loginWithToken = async (req, res) => {
@@ -116,21 +116,69 @@ const signup = async (req, res) => {
     }
 };
 
-// Account fetch function
-const getAccountData = async (req, res) => {
+// Controller function for shipper signup
+const shipperSignup = async (req, res) => {
     try {
-        const accountId = req.user.userId; // Retrieved from the decoded JWT in authenticateToken
-        const account = await Account.findOne({ account_id: accountId });
+        const { username, first_name, last_name, phone_number, password } = req.body;
 
-        if (!account) {
-            return res.status(404).json({ message: 'Account not found' });
+        // Verify if all required fields are present
+        if (!username || !first_name || !last_name || !phone_number || !password) {
+            return res.status(400).json({ message: 'All fields are required' });
         }
 
-        res.status(200).json({ account });
+        // Generate a unique account ID
+        const account_id = await generateAccountID();
+
+        // Check if the user or account already exists
+        const existingAccount = await Account.findOne({ username });
+        if (existingAccount) {
+            return res.status(400).json({ message: 'Username already exists' });
+        }
+
+        // Hash the password
+        const hashedPassword = await hashPassword(password);
+
+        // Create a new account
+        const newAccount = new Account({
+            account_id: account_id,
+            username,
+            password: hashedPassword,
+        });
+
+        // Save the new account to the database
+        await newAccount.save();
+
+        // Create a new user, shipper, and wallet with the generated account _id
+        newAccount.user = {
+            user_id: newAccount.account_id,
+            first_name,
+            last_name,
+            phone_number
+        };
+
+        newAccount.shipper = {
+            shipper_id: newAccount.account_id,
+            shipped_orders: [],
+            current_orders: [],
+            routes: []
+        };
+
+        newAccount.wallet = {
+            user_id: newAccount.account_id,
+            balance: 500000,
+            transaction_history: []
+        };
+
+        // Save the updated account with user, shipper, and wallet
+        await newAccount.save();
+
+        // Return the token along with other response data
+        const token = generateToken({ userId: newAccount.account_id });
+        res.status(201).json({ message: 'User, account, and wallet created successfully', token, account: newAccount });
     } catch (error) {
-        console.error('Error fetching account data:', error);
+        console.error('Error creating shipper account:', error);
         res.status(500).json({ message: 'Internal server error' });
     }
 };
 
-module.exports = { login, loginWithToken, signup, shipperSignup, getAccountData };
+module.exports = { login, signup, shipperSignup, loginWithToken };
