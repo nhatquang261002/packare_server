@@ -3,10 +3,14 @@ const router = express.Router();
 const { updateShipperMaxDistance, recommendOrderForShipper, getCurrentOrders } = require('../controllers/shipper_controller');
 const { authenticateToken } = require('../middlewares/jwt_verify');
 const { checkRole } = require('../middlewares/check_role');
-const { login, shipperSignup } = require('../controllers/auth_controller');
+const { login, shipperSignup, loginWithToken } = require('../controllers/auth_controller');
 
 // Login route for Shipper
 router.post('/login', login);
+
+// Login with token route for Shipper
+router.post('/login-with-token', loginWithToken);
+
 
 // Signup route for Shipper
 router.post('/signup', shipperSignup);
