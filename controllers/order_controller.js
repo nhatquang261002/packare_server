@@ -3,7 +3,7 @@ const Settings = require('../models/settings_model');
 const Account = require('../models/account_model');
 const { getDirections } = require('../services/mapbox');
 const { generateOrderID } = require('../utils/generate_id');
-const {sendOrderStatusNotification} = require('../websocket/notification_service');
+const { sendOrderStatusNotification } = require('../websocket/notification_service');
 
 // Create a new order
 const createOrder = async (req, res) => {
@@ -28,7 +28,7 @@ const createOrder = async (req, res) => {
 
 
         // Verify required fields
-        if (!sender_id || !receiver_name || !receiver_phone || !sender_paid || !send_address || !send_coordinates || !delivery_address || !delivery_coordinates || !preferred_pickup_start_time || !preferred_pickup_end_time || !preferred_delivery_start_time || !preferred_delivery_end_time || !order_lasting_time || !packages ) {
+        if (!sender_id || !receiver_name || !receiver_phone || !sender_paid || !send_address || !send_coordinates || !delivery_address || !delivery_coordinates || !preferred_pickup_start_time || !preferred_pickup_end_time || !preferred_delivery_start_time || !preferred_delivery_end_time || !order_lasting_time || !packages) {
             return res.status(400).json({ message: 'Missing required fields or packages' });
         }
 
@@ -39,7 +39,7 @@ const createOrder = async (req, res) => {
         // If sender account not found, return error
         if (!senderAccount) {
             return res.status(404).json({ message: 'Sender account not found' });
-        }   
+        }
 
         // If sender balance is less than sender_paid, return error
         if (senderAccount.wallet.balance < sender_paid) {
@@ -112,7 +112,7 @@ const getOrderById = async (req, res) => {
 const verifyOrder = async (req, res) => {
     try {
         const orderId = req.params.id;
-        
+
         // Find the order
         const order = await Order.findOne({ order_id: orderId });
 
@@ -294,7 +294,7 @@ const confirmDelivered = async (req, res) => {
 
         sendOrderStatusNotification(orderId, 'delivered');
 
-        res.status(200).json({ message: 'Order delivered confirmed successfully'  });
+        res.status(200).json({ message: 'Order delivered confirmed successfully' });
     } catch (error) {
         console.error('Error confirming delivered:', error);
         res.status(500).json({ message: 'Failed to confirm delivered' });
@@ -378,8 +378,8 @@ const cancelOrder = async (req, res) => {
                 console.error('Shipper account not found');
             }
         }
-         // Refund the sender's wallet balance
-         if (sender_id) {
+        // Refund the sender's wallet balance
+        if (sender_id) {
             const senderAccount = await Account.findOne({ account_id: sender_id });
             if (senderAccount) {
                 senderAccount.wallet.balance += sender_paid;
@@ -506,7 +506,7 @@ const deletePackage = async (req, res) => {
         const { orderId, packageId } = req.params;
 
         // Find the order
-        const order = await Order.findOne({order_id: orderId});
+        const order = await Order.findOne({ order_id: orderId });
 
         if (!order) {
             return res.status(404).json({ message: 'Order not found' });
@@ -530,7 +530,7 @@ const getOrderPackages = async (req, res) => {
         const orderId = req.params.id;
 
         // Find the order by ID
-        const order = await Order.findOne({order_id: orderId});
+        const order = await Order.findOne({ order_id: orderId });
 
         if (!order) {
             return res.status(404).json({ message: 'Order not found' });
@@ -557,7 +557,7 @@ const orderFeedback = async (req, res) => {
         const { order_id, rating, comment } = req.body;
 
         // Find the corresponding order and update its feedback details
-        const order = await Order.findOne({order_id: order_id});
+        const order = await Order.findOne({ order_id: order_id });
         if (!order) {
             return res.status(404).json({ message: 'Order not found' });
         }
@@ -582,11 +582,41 @@ const getOrdersByUser = async (req, res) => {
         const userId = req.params.user_id;
 
         // Find orders matching sender_id
-        const orders = await Order.find({ sender_id: userId});
+        const orders = await Order.find({ sender_id: userId });
 
         res.status(200).json({ message: 'Orders retrieved successfully', orders });
     } catch (error) {
         console.error('Error retrieving orders for user:', error);
+        res.status(500).json({ message: 'Failed to retrieve orders' });
+    }
+};
+
+// Get orders by a specific status
+const getOrdersByStatus = async (req, res) => {
+    try {
+        const userId = req.params.user_id;
+        const { status } = req.query; // Extract status from query parameters
+
+        // Validate input
+        if (!status) {
+            return res.status(400).json({ message: 'Status parameter is required' });
+        }
+
+        // Check if the provided status is valid
+        const validStatuses = [
+            'waiting', 'verified', 'declined', 'shipper_accepted', 'start_shipping',
+            'cancelled', 'shipper_picked_up', 'delivered', 'completed'
+        ];
+        if (!validStatuses.includes(status)) {
+            return res.status(400).json({ message: `Invalid status: ${status}` });
+        }
+
+        // Query orders by sender_id and status
+        const orders = await Order.find({ sender_id: userId, status: status });
+
+        res.status(200).json({ message: 'Orders retrieved successfully', orders });
+    } catch (error) {
+        console.error('Error retrieving orders by status:', error);
         res.status(500).json({ message: 'Failed to retrieve orders' });
     }
 };
@@ -609,8 +639,8 @@ const calculateShippingPrice = async (req, res) => {
         const next_half_km_price = settings.settings.find(item => item.key === 'next_half_km_price').value;
 
 
-         // Ensure sendCoords and receiveCoords are provided
-         if (!sendCoords || !receiveCoords) {
+        // Ensure sendCoords and receiveCoords are provided
+        if (!sendCoords || !receiveCoords) {
             return res.status(400).json({ message: 'Send and receive coordinates are required' });
         }
 
@@ -619,7 +649,7 @@ const calculateShippingPrice = async (req, res) => {
             sendCoords,
             receiveCoords
         );
-        
+
         // Extract distance from directions
         const distanceInKm = directions.distance / 1000; // Convert meters to kilometers
 
@@ -666,6 +696,7 @@ module.exports = {
     getOrderById,
     orderFeedback,
     getOrdersByUser,
+    getOrdersByStatus,
     calculateShippingPrice,
     startShipping,
 };

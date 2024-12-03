@@ -19,8 +19,9 @@ const {
     getOrderPackages,
     getOrderById,
     getOrdersByUser,
+    getOrdersByStatus,
     calculateShippingPrice,
-    startShipping // Add the import for the startShipping function
+    startShipping
 } = require('../controllers/order_controller');
 
 // Create new Order
@@ -30,13 +31,13 @@ router.post('/create-order', authenticateToken, createOrder);
 router.post('/:id/feedback', authenticateToken, orderFeedback);
 
 // Accept Order
-router.put('/:id/accept',  authenticateToken, checkRole(['admin', 'shipper']), acceptOrder);
+router.put('/:id/accept', authenticateToken, checkRole(['admin', 'shipper']), acceptOrder);
 
 // Decline verify Order from Staff
-router.put('/:id/decline',   declineOrder);
+router.put('/:id/decline', declineOrder);
 
 // Verify the Order from staff
-router.put('/:id/verify',   verifyOrder);
+router.put('/:id/verify', verifyOrder);
 
 // Cancel Order
 router.put('/:id/cancel', authenticateToken, cancelOrder);
@@ -65,8 +66,11 @@ router.put('/:orderId/packages/:packageId/update', authenticateToken, updatePack
 // Delete Order's Package by Id
 router.delete('/:orderId/packages/:packageId/delete', authenticateToken, deletePackage);
 
+// Get Orders of User by status
+router.get('/user/:user_id/status', authenticateToken, getOrdersByStatus);
+
 // Get Orders by User
-router.get('/user/:user_id', authenticateToken, getOrdersByUser); 
+router.get('/user/:user_id', authenticateToken, getOrdersByUser);
 
 // Calculate Shipping Price
 router.post('/calculate-shipping-price', authenticateToken, calculateShippingPrice);
