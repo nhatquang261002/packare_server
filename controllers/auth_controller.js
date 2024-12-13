@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const Account = require('../models/account_model');
 const jwt = require('jsonwebtoken');
+const config = require('../secret_config');
 const { hashPassword } = require('../utils/hash');
 const { generateToken } = require('../utils/jwt');
 const { generateAccountID } = require('../utils/generate_id');
