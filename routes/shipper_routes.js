@@ -22,9 +22,9 @@ router.put('/max-distance/:id', authenticateToken, checkRole(['admin', 'staff', 
 router.post('/recommend-orders', authenticateToken, checkRole(['admin', 'staff', 'shipper']), recommendOrderForShipper);
 
 // Get Current Orders for Shipper
-router.get('/shipping-orders/:id', authenticateToken, checkRole(['admin', 'staff', 'shipper']), getOrders);
+router.get('/current-orders/:id', authenticateToken, checkRole(['admin', 'staff', 'shipper']), getOrders);
 
 // Route to get orders by status
-router.get('/shipping-orders/status', getShippingOrdersByStatus);
+router.get('/shipping-orders/:status', getShippingOrdersByStatus);
 
 module.exports = router;
