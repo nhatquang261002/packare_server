@@ -41,8 +41,15 @@ const getShippingOrdersByStatus = async (req, res) => {
             return res.status(400).json({ message: 'Status is required' });
         }
 
-        // Find orders by status
-        const orders = await Order.find({ status });
+        // Extract the order IDs from current_orders array
+        const orderIds = shipperAccount.shipper.current_orders;
+
+        if(orderIds && orderIds.length > 0) {
+            // Find orders from Order schema based on the extracted order IDs
+            const currentOrders = await Order.find({ status: { $in: status } });
+            
+            return res.status(200).json({ message: 'Current orders retrieved successfully', currentOrders });
+        }
 
         // Check if orders are found
         if (!orders.length) {
