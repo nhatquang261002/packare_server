@@ -34,10 +34,15 @@ const getOrders = async (req, res) => {
 
 const getShippingOrdersByStatus = async (req, res) => {
     try {
-        const { status } = req.query; // Get the status from query params
+
+        const shipperAccount = await Account.findOne({ 'shipper.shipper_id': req.params.id });
+        
+        if (!shipperAccount) { // Corrected: Change `!shipper` to `!shipperAccount`
+            return res.status(404).json({ message: 'Shipper not found' });
+        }
 
         // Validate that the status parameter is provided
-        if (!status) {
+        if (!req.params.status) {
             return res.status(400).json({ message: 'Status is required' });
         }
 

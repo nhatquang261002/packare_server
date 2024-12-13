@@ -25,6 +25,6 @@ router.post('/recommend-orders', authenticateToken, checkRole(['admin', 'staff',
 router.get('/current-orders/:id', authenticateToken, checkRole(['admin', 'staff', 'shipper']), getOrders);
 
 // Route to get orders by status
-router.get('/shipping-orders/:status', getShippingOrdersByStatus);
+router.get('/shipping-orders/:id/:status', getShippingOrdersByStatus);
 
 module.exports = router;
