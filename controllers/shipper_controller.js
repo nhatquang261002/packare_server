@@ -55,13 +55,6 @@ const getShippingOrdersByStatus = async (req, res) => {
             
             return res.status(200).json({ message: 'Orders retrieved successfully', orders });
         }
-
-        // Check if orders are found
-        if (!orders.length) {
-            return res.status(404).json({ message: 'No orders found with the given status' });
-        }
-
-        res.status(200).json({ message: 'Orders retrieved successfully', orders });
     } catch (error) {
         console.error('Error retrieving orders by status:', error);
         res.status(500).json({ message: 'Failed to retrieve orders', error: error.message });
