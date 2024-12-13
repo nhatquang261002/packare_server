@@ -4,7 +4,7 @@ const Order = require('../models/order_model');
 const Route = require('../models/route_model');
 const {  getDirections } = require('../services/mapbox');
 
-const getCurrentOrders = async (req, res) => {
+const getOrders = async (req, res) => {
     try {
         // Find the shipper by shipper_id
         const shipperAccount = await Account.findOne({ 'shipper.shipper_id': req.params.id });
@@ -31,6 +31,31 @@ const getCurrentOrders = async (req, res) => {
         return res.status(500).json({ message: 'Failed to retrieve current orders', error: error.message });
     }
 }
+
+const getShippingOrdersByStatus = async (req, res) => {
+    try {
+        const { status } = req.query; // Get the status from query params
+
+        // Validate that the status parameter is provided
+        if (!status) {
+            return res.status(400).json({ message: 'Status is required' });
+        }
+
+        // Find orders by status
+        const orders = await Order.find({ status });
+
+        // Check if orders are found
+        if (!orders.length) {
+            return res.status(404).json({ message: 'No orders found with the given status' });
+        }
+
+        res.status(200).json({ message: 'Orders retrieved successfully', orders });
+    } catch (error) {
+        console.error('Error retrieving orders by status:', error);
+        res.status(500).json({ message: 'Failed to retrieve orders', error: error.message });
+    }
+};
+
 
 
 
@@ -259,4 +284,4 @@ const recommendOrderForShipper = async (req, res) => {
 
 
 
-module.exports = { getCurrentOrders, updateShipperMaxDistance, recommendOrderForShipper };
+module.exports = { getOrders, getShippingOrdersByStatus, updateShipperMaxDistance, recommendOrderForShipper };
