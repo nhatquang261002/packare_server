@@ -2,13 +2,13 @@ const Account = require('../models/account_model');
 const Settings = require('../models/settings_model');
 const Order = require('../models/order_model');
 const Route = require('../models/route_model');
-const {  getDirections } = require('../services/mapbox');
+const { getDirections } = require('../services/mapbox');
 
 const getOrders = async (req, res) => {
     try {
         // Find the shipper by shipper_id
         const shipperAccount = await Account.findOne({ 'shipper.shipper_id': req.params.id });
-        
+
         if (!shipperAccount) { // Corrected: Change `!shipper` to `!shipperAccount`
             return res.status(404).json({ message: 'Shipper not found' });
         }
@@ -16,16 +16,16 @@ const getOrders = async (req, res) => {
         // Extract the order IDs from current_orders array
         const orderIds = shipperAccount.shipper.current_orders;
 
-        if(orderIds && orderIds.length > 0) {
+        if (orderIds && orderIds.length > 0) {
             // Find orders from Order schema based on the extracted order IDs
             const currentOrders = await Order.find({ order_id: { $in: orderIds } });
-            
+
             return res.status(200).json({ message: 'Current orders retrieved successfully', currentOrders });
         } else {
             // If current_orders array is empty or null, return an empty array
             return res.status(200).json({ message: 'No current orders found', currentOrders: [] });
         }
-        
+
     } catch (error) {
         console.error('Error retrieving current orders:', error);
         return res.status(500).json({ message: 'Failed to retrieve current orders', error: error.message });
@@ -34,30 +34,51 @@ const getOrders = async (req, res) => {
 
 const getShippingOrdersByStatus = async (req, res) => {
     try {
+        const { id, status } = req.params;
 
-        const shipperAccount = await Account.findOne({ 'shipper.shipper_id': req.params.id });
-        
-        if (!shipperAccount) { // Corrected: Change `!shipper` to `!shipperAccount`
-            return res.status(404).json({ message: 'Shipper not found' });
+        // Validate request parameters
+        if (!id) {
+            return res.status(400).json({ message: 'Shipper ID is required' });
         }
 
-        // Validate that the status parameter is provided
-        if (!req.params.status) {
+        if (!status) {
             return res.status(400).json({ message: 'Status is required' });
         }
 
-        // Extract the order IDs from current_orders array
-        const orderIds = shipperAccount.shipper.current_orders;
+        // Find the shipper account
+        const shipperAccount = await Account.findOne({ 'shipper.shipper_id': id });
 
-        if(orderIds && orderIds.length > 0) {
-            // Find orders from Order schema based on the extracted order IDs
-            const orders = await Order.find({ status: { $in: req.params.status } });
-            
-            return res.status(200).json({ message: 'Orders retrieved successfully', orders });
+        if (!shipperAccount) {
+            return res.status(404).json({ message: 'Shipper not found' });
         }
+
+        // Determine the order IDs to fetch based on the status
+        const orderIds =
+            status === 'completed'
+                ? shipperAccount.shipper.shipped_orders
+                : shipperAccount.shipper.current_orders;
+
+        if (!orderIds || orderIds.length === 0) {
+            return res.status(200).json({ message: 'No orders found', orders: [] });
+        }
+
+        // Fetch orders from the Order schema based on the status and order IDs
+        const orders = await Order.find({
+            _id: { $in: orderIds },
+            status
+        });
+
+        return res.status(200).json({
+            message: 'Orders retrieved successfully',
+            orders
+        });
+
     } catch (error) {
         console.error('Error retrieving orders by status:', error);
-        res.status(500).json({ message: 'Failed to retrieve orders', error: error.message });
+        res.status(500).json({
+            message: 'Failed to retrieve orders',
+            error: error.message
+        });
     }
 };
 
@@ -68,22 +89,22 @@ const getShippingOrdersByStatus = async (req, res) => {
 // Update a shipper's max_distance_allowance
 const updateShipperMaxDistance = async (req, res) => {
     try {
-      const { max_distance_allowance } = req.body;
-      
-      const shipper = await Account.findOneAndUpdate(
-        { 'shipper.shipper_id': req.params.id }, 
-        { 'shipper.max_distance_allowance': max_distance_allowance },
-        { new: true }
-      );
-  
-      if (!shipper) {
-        return res.status(404).json({ message: 'Shipper not found' });
-      }
-  
-      res.status(200).json({ message: 'Shipper max_distance_allowance updated successfully', shipper });
+        const { max_distance_allowance } = req.body;
+
+        const shipper = await Account.findOneAndUpdate(
+            { 'shipper.shipper_id': req.params.id },
+            { 'shipper.max_distance_allowance': max_distance_allowance },
+            { new: true }
+        );
+
+        if (!shipper) {
+            return res.status(404).json({ message: 'Shipper not found' });
+        }
+
+        res.status(200).json({ message: 'Shipper max_distance_allowance updated successfully', shipper });
     } catch (error) {
-      console.error('Error updating shipper max_distance_allowance:', error);
-      res.status(500).json({ message: 'Failed to update shipper max_distance_allowance' });
+        console.error('Error updating shipper max_distance_allowance:', error);
+        res.status(500).json({ message: 'Failed to update shipper max_distance_allowance' });
     }
 };
 
@@ -105,13 +126,13 @@ const recommendOrderForShipper = async (req, res) => {
 
         const current_order_limit = settings.settings.find(item => item.key === 'current_order_limit').value;
         if (shipper.shipper.current_orders.length >= current_order_limit) {
-            
+
             return res.status(404).json({ message: 'Current Order Limited' });
         }
 
         const recommend_order_limit = settings.settings.find(item => item.key === 'recommend_order_limit').value;
 
-        let maxDistanceAllowance = shipper.shipper.max_distance_allowance ;
+        let maxDistanceAllowance = shipper.shipper.max_distance_allowance;
 
         // Find all active routes of the shipper
         const activeRoutes = await Route.find({ shipper_id: shipper_id, isActive: true });
@@ -145,7 +166,7 @@ const recommendOrderForShipper = async (req, res) => {
                 continue; // Skip if route direction is unknown
             }
 
-            
+
 
             for (const { origin, destination } of directionsToCheck) {
                 let routeOrigin = {
@@ -209,14 +230,14 @@ const recommendOrderForShipper = async (req, res) => {
                         }
                     ]
                 });
-                
 
-                
+
+
                 const shipperRouteDistance = currentRoute.distance;
 
                 for (const order of nearbyOrders) {
-     
-                    if(recommendedOrders.length >= recommend_order_limit) {
+
+                    if (recommendedOrders.length >= recommend_order_limit) {
                         break;
                     }
                     const orderSendCoordinates = {
@@ -231,7 +252,7 @@ const recommendOrderForShipper = async (req, res) => {
 
                     // Check if order already exists in recommendedOrders
                     const existingOrderIndex = recommendedOrders.findIndex(item => item.order.order_id === order.order_id);
-            
+
                     try {
 
                         // Get order's route distance from Goong API
@@ -241,11 +262,11 @@ const recommendOrderForShipper = async (req, res) => {
                         if (!order.distance) {
                             order.distance = distance || null;
                         }
-                
+
                         if (!order.shipper_route_id) {
                             order.shipper_route_id = currentRoute._id || null;
                         }
-                
+
                         if (!order.order_geometry) {
                             order.order_geometry = geometry || null;
                         }
@@ -255,8 +276,8 @@ const recommendOrderForShipper = async (req, res) => {
 
                         // Calculate total combined distance, min is 0
                         const totalCombinedDistance = Math.max(0.0, (distance - shipperRouteDistance) / 1000);
-                       console.log(totalCombinedDistance);
-                       console.log(maxDistanceAllowance);
+                        console.log(totalCombinedDistance);
+                        console.log(maxDistanceAllowance);
                         if (existingOrderIndex !== -1) {
                             // Order already exists in recommendedOrders, update variables
                             if (totalCombinedDistance < recommendedOrders[existingOrderIndex].distance && totalCombinedDistance < maxDistanceAllowance) {
