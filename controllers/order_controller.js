@@ -286,12 +286,6 @@ const confirmDelivered = async (req, res) => {
         // Find the shipper associated with the order
         const shipper = await Account.findOne({ 'shipper.shipper_id': order.shipper_id });
 
-        if (shipper) {
-            // Remove the order ID from the shipper's current orders
-            shipper.current_orders = shipper.current_orders.filter(id => id !== orderId);
-            await shipper.save();
-        }
-
         sendOrderStatusNotification(orderId, 'delivered');
 
         res.status(200).json({ message: 'Order delivered confirmed successfully' });

@@ -187,6 +187,13 @@ const recommendOrderForShipper = async (req, res) => {
                 const nearbyOrders = await Order.find({
                     $and: [
                         {
+                            status: 'verified'
+                        },
+                        {
+                            preferred_pickup_start_time: { $lte: new Date() },
+                            preferred_pickup_end_time: { $gte: new Date() }
+                        },
+                        {
                             send_coordinates: {
                                 $geoWithin: {
                                     $geometry: boundingBox
@@ -199,12 +206,10 @@ const recommendOrderForShipper = async (req, res) => {
                                     $geometry: boundingBox
                                 }
                             }
-                        },
-                        {
-                            status: 'verified'
                         }
                     ]
                 });
+                
 
                 
                 const shipperRouteDistance = currentRoute.distance;
