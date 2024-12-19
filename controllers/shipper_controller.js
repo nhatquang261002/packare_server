@@ -64,7 +64,7 @@ const getShippingOrdersByStatus = async (req, res) => {
 
         // Fetch orders from the Order schema based on the status and order IDs
         const orders = await Order.find({
-            _id: { $in: orderIds },
+            order_id: { $in: orderIds },
             status
         });
 
