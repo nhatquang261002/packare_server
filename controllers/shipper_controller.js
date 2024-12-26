@@ -263,8 +263,6 @@ const recommendOrderForShipper = async (req, res) => {
                             order.distance = distance || null;
                         }
 
-                        console.log('1');
-
                         if (!order.shipper_route_id) {
                             order.shipper_route_id = currentRoute._id || null;
                         }

@@ -61,11 +61,11 @@ const getDirections = async (origin, destination, waypoints = []) => {
                 geometry
             };
         } else {
-           throw new Error('Failed to retrieve route data');
+           console.log('Failed to retrieve route data');
         }
         
     } catch (error) {
-        // throw error;
+        console.log(error);
     }
 };
 
