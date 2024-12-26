@@ -257,13 +257,13 @@ const recommendOrderForShipper = async (req, res) => {
 
                         // Get order's route distance from Goong API
                         const { distance, geometry } = await getDirections(routeOrigin, routeDestination, orderCoordinates);
-                        console.log(distance);
-                        console.log("order" + order.distance);
 
                         // Initialize fields if they are not already initialized in the order object
                         if (!order.distance) {
                             order.distance = distance || null;
                         }
+
+                        console.log('1');
 
                         if (!order.shipper_route_id) {
                             order.shipper_route_id = currentRoute._id || null;
