@@ -66,8 +66,8 @@ const getDirections = async (origin, destination, waypoints = []) => {
         }
         
     } catch (error) {
-        // console.error('Error fetching route data from Goong:', error);
-        // throw error;
+        console.error('Error fetching route data from Goong:', error);
+        throw error;
     }
 };
 
