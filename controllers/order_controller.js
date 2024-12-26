@@ -76,7 +76,10 @@ const createOrder = async (req, res) => {
             preferred_delivery_end_time,
             order_lasting_time,
             status: 'waiting', // Default status
-            packages: packages
+            packages: packages,
+            distance: null,
+            order_geometry: null,
+            shipper_route_id: null,
         });
 
         await order.save();
