@@ -36,8 +36,6 @@ const getDirections = async (origin, destination, waypoints = []) => {
         // Send a GET request to the Goong Directions API
         const response = await axios.get(url);
 
-        console.log(response.data)
-
         // Check if the response contains route data
         if (response.data.routes && response.data.routes.length > 0) {
             const route = response.data.routes[0];

@@ -261,20 +261,14 @@ const recommendOrderForShipper = async (req, res) => {
                         // Initialize fields if they are not already initialized in the order object
                         if (!order.distance) {
                             order.distance = distance || null;
-                        } else {
-                            order.distance = null
                         }
 
                         if (!order.shipper_route_id) {
                             order.shipper_route_id = currentRoute._id || null;
-                        } else {
-                            order.shipper_route_id = null
                         }
 
                         if (!order.order_geometry) {
                             order.order_geometry = geometry || null;
-                        } else {
-                            order.order_geometry = null
                         }
 
                         console.log(order.order_id);
@@ -282,9 +276,8 @@ const recommendOrderForShipper = async (req, res) => {
 
                         // Calculate total combined distance, min is 0
                         const totalCombinedDistance = Math.max(0.0, (distance - shipperRouteDistance) / 1000);
-                        console.log(totalCombinedDistance);
-                        console.log(maxDistanceAllowance);
                         if (existingOrderIndex !== -1) {
+                            console.log(recommendedOrders[existingOrderIndex]);
                             // Order already exists in recommendedOrders, update variables
                             if (totalCombinedDistance < recommendedOrders[existingOrderIndex].distance && totalCombinedDistance < maxDistanceAllowance) {
                                 // Update order details with more efficient route
