@@ -257,6 +257,8 @@ const recommendOrderForShipper = async (req, res) => {
 
                         // Get order's route distance from Goong API
                         const { distance, geometry } = await getDirections(routeOrigin, routeDestination, orderCoordinates);
+                        console.log(distance);
+                        console.log("order" + order.distance);
 
                         // Initialize fields if they are not already initialized in the order object
                         if (!order.distance) {
@@ -277,7 +279,6 @@ const recommendOrderForShipper = async (req, res) => {
                         // Calculate total combined distance, min is 0
                         const totalCombinedDistance = Math.max(0.0, (distance - shipperRouteDistance) / 1000);
                         if (existingOrderIndex !== -1) {
-                            console.log(recommendedOrders[existingOrderIndex]);
                             // Order already exists in recommendedOrders, update variables
                             if (totalCombinedDistance < recommendedOrders[existingOrderIndex].distance && totalCombinedDistance < maxDistanceAllowance) {
                                 // Update order details with more efficient route
