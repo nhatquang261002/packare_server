@@ -4,6 +4,9 @@ const config = require('../secret_config');
 
 const GOONG_TOKEN = config.goongToken.goongToken;
 
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+
 const getDirections = async (origin, destination, waypoints = []) => {
     try {
 
@@ -33,6 +36,9 @@ const getDirections = async (origin, destination, waypoints = []) => {
         url += `&vehicle=bike&api_key=${GOONG_TOKEN}`;
 
         console.log(url);
+
+        await delay(200);
+
         // Send a GET request to the Goong Directions API
         const response = await axios.get(url);
 
